@@ -21,11 +21,6 @@ func main() {
 		log.Fatalf("failed reading CSV: %s", err)
 	}
 
-	env, err := cel.NewEnv(cel.Variable("user", cel.MapType(cel.StringType, cel.AnyType)))
-	if err != nil {
-		log.Fatalf("failed initializing CEL: %s", err)
-	}
-
 	if len(os.Args) != 2 {
 		fmt.Printf(`Usage:
 
@@ -47,14 +42,24 @@ Statements can utilize the following keys:
 	}
 	statement := os.Args[1]
 
+	prg, err := initCEL(statement)
+	if err != nil {
+		log.Fatalf("failed initializing CEL: %s", err)
+	}
+
+	sum := 0
+	count := 0
 	for _, line := range db {
-		fmt.Println(line)
-		out, err := eval(env, statement, line)
+		out, err := eval(prg, line)
 		if err != nil {
 			log.Fatalf("failed evaluating example statement: %s", err)
 		}
-		fmt.Println(out)
+		if out {
+			count++
+			sum += line["balance"].(int)
+		}
 	}
+	fmt.Printf("Average Balance: %f\n", float64(sum)/float64(count))
 }
 
 func readCSV(filepath string) ([]map[string]interface{}, error) {
@@ -102,16 +107,19 @@ func readCSV(filepath string) ([]map[string]interface{}, error) {
 	return ret, nil
 }
 
-func eval(env *cel.Env, statement string, user map[string]interface{}) (bool, error) {
+func initCEL(statement string) (cel.Program, error) {
+	env, err := cel.NewEnv(cel.Variable("user", cel.MapType(cel.StringType, cel.AnyType)))
+	if err != nil {
+		return nil, err
+	}
 	ast, iss := env.Compile(statement)
 	if iss.Err() != nil {
-		return false, iss.Err()
+		return nil, err
 	}
+	return env.Program(ast)
+}
 
-	prg, err := env.Program(ast)
-	if err != nil {
-		return false, err
-	}
+func eval(prg cel.Program, user map[string]interface{}) (bool, error) {
 	out, _, err := prg.Eval(map[string]interface{}{
 		"user": user,
 	})
