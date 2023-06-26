@@ -124,6 +124,12 @@ func evalToBool(prg cel.Program, user map[string]interface{}) (bool, error) {
 		return false, err
 	}
 
+	// *technically* the requirements only state that the filter is to include
+	// anything that evaluates to true -- meaning you could construct a
+	// statement that evaluates to a boolean for some lines and an object for
+	// others, where the latter should be treated as false. However, I'm going
+	// to assume this was not a gotcha and that erroring out on seemingly
+	// invalid results is the more correct thing to do.
 	if !types.IsBool(out) {
 		return false, errNonBool
 	}
