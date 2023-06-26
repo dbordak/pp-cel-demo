@@ -50,7 +50,7 @@ Statements can utilize the following keys:
 	sum := 0
 	count := 0
 	for _, line := range db {
-		out, err := eval(prg, line)
+		out, err := evalToBool(prg, line)
 		if err != nil {
 			log.Fatalf("failed evaluating example statement: %s", err)
 		}
@@ -119,7 +119,7 @@ func initCEL(statement string) (cel.Program, error) {
 	return env.Program(ast)
 }
 
-func eval(prg cel.Program, user map[string]interface{}) (bool, error) {
+func evalToBool(prg cel.Program, user map[string]interface{}) (bool, error) {
 	out, _, err := prg.Eval(map[string]interface{}{
 		"user": user,
 	})
