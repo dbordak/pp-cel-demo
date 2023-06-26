@@ -15,6 +15,8 @@ import (
 
 const csvFilename = "./user_profiles.csv"
 
+var errNonBool error = errors.New("statements must evaluate to a boolean")
+
 func main() {
 	db, err := readCSV(csvFilename)
 	if err != nil {
@@ -128,7 +130,7 @@ func evalToBool(prg cel.Program, user map[string]interface{}) (bool, error) {
 	}
 
 	if !types.IsBool(out) {
-		return false, errors.New("statements must evaluate to a boolean")
+		return false, errNonBool
 	}
 	refType := reflect.TypeOf(true)
 	val, err := out.ConvertToNative(refType)
