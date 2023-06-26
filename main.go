@@ -26,10 +26,14 @@ func main() {
 	if len(os.Args) != 2 {
 		fmt.Printf(`Usage:
 
-	%s <statement>
+	%[1]s <statement>
 
 Statements must be valid CEL statements, which must result in booleans, evaluated
-linewise on the contents of %s.
+linewise on the contents of %[2]s.
+
+Example Usage:
+		%[1]s 'user.gender == "male"'
+		%[1]s 'user.balance >= 500.0 && user.gender == "female" && user.age <= 30'
 
 Statements can utilize the following keys:
 
