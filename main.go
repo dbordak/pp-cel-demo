@@ -52,20 +52,11 @@ Statements can utilize the following keys:
 	if err != nil {
 		log.Fatalf("failed initializing CEL: %s", err)
 	}
-
-	sum := 0
-	count := 0
-	for _, line := range db {
-		out, err := evalToBool(prg, line)
-		if err != nil {
-			log.Fatalf("failed evaluating example statement: %s", err)
-		}
-		if out {
-			count++
-			sum += line["balance"].(int)
-		}
+	out, err := average(prg, db)
+	if err != nil {
+		log.Fatalf("failed evaluating average: %s", err)
 	}
-	fmt.Printf("Average Balance: %f\n", float64(sum)/float64(count))
+	fmt.Printf("Average Balance: %f\n", out)
 }
 
 func readCSV(filepath string) ([]map[string]interface{}, error) {
@@ -139,4 +130,20 @@ func evalToBool(prg cel.Program, user map[string]interface{}) (bool, error) {
 	refType := reflect.TypeOf(true)
 	val, err := out.ConvertToNative(refType)
 	return val.(bool), err
+}
+
+func average(prg cel.Program, db []map[string]interface{}) (float64, error) {
+	sum := 0
+	count := 0
+	for _, line := range db {
+		out, err := evalToBool(prg, line)
+		if err != nil {
+			return 0, err
+		}
+		if out {
+			count++
+			sum += line["balance"].(int)
+		}
+	}
+	return float64(sum) / float64(count), nil
 }
