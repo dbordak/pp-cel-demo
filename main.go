@@ -13,8 +13,10 @@ import (
 	"github.com/google/cel-go/common/types"
 )
 
+const csvFilename = "./user_profiles.csv"
+
 func main() {
-	db, err := readCSV("user_profiles.csv")
+	db, err := readCSV(csvFilename)
 	if err != nil {
 		log.Fatalf("failed reading CSV: %s", err)
 	}
@@ -24,9 +26,28 @@ func main() {
 		log.Fatalf("failed initializing CEL: %s", err)
 	}
 
+	if len(os.Args) != 2 {
+		fmt.Printf(`Usage:
+
+	%s <statement>
+
+Statements must be valid CEL statements, which result in booleans, evaluated on
+the contents of %s. Statements can utilize the following keys:
+
+	user.id        (string)
+	user.gender    (string)
+	user.age       (integer)
+	user.balance   (integer)
+
+`, os.Args[0], csvFilename)
+
+		os.Exit(2)
+	}
+	statement := os.Args[1]
+
 	for _, line := range db {
 		fmt.Println(line)
-		out, err := example(env, line)
+		out, err := eval(env, statement, line)
 		if err != nil {
 			log.Fatalf("failed evaluating example statement: %s", err)
 		}
@@ -79,10 +100,8 @@ func readCSV(filepath string) ([]map[string]interface{}, error) {
 	return ret, nil
 }
 
-func example(env *cel.Env, user map[string]interface{}) (bool, error) {
-	example := `user.balance >= 500.0 && user.gender == "female" && user.age <= 30 && user.id == "yf2"`
-	ast, iss := env.Compile(example)
-
+func eval(env *cel.Env, statement string, user map[string]interface{}) (bool, error) {
+	ast, iss := env.Compile(statement)
 	if iss.Err() != nil {
 		return false, iss.Err()
 	}
