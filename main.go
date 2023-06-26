@@ -31,8 +31,10 @@ func main() {
 
 	%s <statement>
 
-Statements must be valid CEL statements, which result in booleans, evaluated on
-the contents of %s. Statements can utilize the following keys:
+Statements must be valid CEL statements, which must result in booleans, evaluated
+linewise on the contents of %s.
+
+Statements can utilize the following keys:
 
 	user.id        (string)
 	user.gender    (string)
