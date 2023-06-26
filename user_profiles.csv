@@ -1,0 +1,13 @@
+userId,gender,age,accountBalance
+ym1,male,10,500
+ym2,male,20,100
+ym3,male,25,700
+om1,male,35,800
+om2,male,40,50
+om3,male,45,150
+yf1,female,10,900
+yf2,female,20,1000
+yf3,female,25,80
+of1,female,35,90
+of2,female,40,100
+of3,female,45,110
